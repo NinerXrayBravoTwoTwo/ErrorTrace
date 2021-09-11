@@ -81,13 +81,12 @@ namespace ErrorTrace
             //    where !string.IsNullOrEmpty(s)
             //    select s;
 
-            return 
+            return
                 frames
                 .Where(f => f != null)
                 .Select(GetTraceItem)
                 .Where(s => !string.IsNullOrEmpty(s))
-                .Select(s => s); ;
-            
+                .Select(s => s);
         }
 
         /// <summary>
