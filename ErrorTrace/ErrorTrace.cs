@@ -10,22 +10,22 @@ namespace ErrorTrace
     /// </summary>
     public static class ErrorTrace
     {
-        private static string DebuggingErrorFormatRecurse(Exception err, int depth)
+        private static string DebuggingErrorFormatRecurse(Exception error, int depth)
         {
-            if (err == null || depth >= 20)
-                return err == null
+            if (error == null || depth >= 20)
+                return error == null
                     ? string.Empty
-                    : $"'{CountInnerDepth(err.InnerException)}' additional nested inner exceptions are not shown.";
+                    : $"'{InnerExceptionCount(error.InnerException)}' additional nested inner exceptions are not shown.";
 
             // Linq array of strings builder
             var q =
-                (from s in new[] { $"'{err.GetType()}' Error: {err.Message}" }
-                 select s).Union(GetTrace(err));
+                (from s in new[] { $"'{error.GetType()}' Error: {error.Message}" }
+                 select s).Union(GetTrace(error));
 
-            if (err.InnerException != null)
+            if (error.InnerException != null)
                 q =
                     q.Union(new[]
-                    {$"Inner: {DebuggingErrorFormatRecurse(err.InnerException, depth + 1)}"});
+                    {$"Inner: {DebuggingErrorFormatRecurse(error.InnerException, depth + 1)}"});
 
             var result = string.Join(Environment.NewLine, q.ToArray());
 
@@ -35,11 +35,11 @@ namespace ErrorTrace
         /// <summary>
         ///     Recursively concatenate an error and it's inner exception texts to a string.
         /// </summary>
-        /// <param name="err"></param>
+        /// <param name="error"></param>
         /// <returns></returns>
-        public static string DebuggingErrorFormat(Exception err)
+        public static string DebuggingErrorFormat(Exception error)
         {
-            return DebuggingErrorFormatRecurse(err, 0);
+            return DebuggingErrorFormatRecurse(error, 0);
         }
 
         /// <summary>
@@ -70,17 +70,7 @@ namespace ErrorTrace
             // GetFrames returns null instead of an empty array if there are no frames
             // so we must 'fix' the empty case in order to use it in a Linq query.
             var frames = trace.FrameCount > 0 ? trace.GetFrames() : new StackFrame[] { };
-
-            //var result =
-            //    from s in
-            //        (
-            //            from frame in frames
-            //            where frame != null
-            //            select GetTraceItem(frame)
-            //            )
-            //    where !string.IsNullOrEmpty(s)
-            //    select s;
-
+            
             return
                 frames
                 .Where(f => f != null)
@@ -113,13 +103,13 @@ namespace ErrorTrace
         /// <summary>
         ///     Count the depth of InnerException
         /// </summary>
-        /// <param name="err"></param>
+        /// <param name="error"></param>
         /// <returns></returns>
-        public static int CountInnerDepth(Exception err)
+        public static int InnerExceptionCount(Exception error)
         {
-            return err == null
+            return error == null
                 ? 0
-                : 1 + CountInnerDepth(err.InnerException);
+                : 1 + InnerExceptionCount(error.InnerException);
         }
     }
 }

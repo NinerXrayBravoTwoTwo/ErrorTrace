@@ -45,9 +45,9 @@ namespace ErrorTrace.XTest
                 throw new ArgumentException("error_level_one", "param2", null);
                 //Assert.Fail("Expected thrown error to be caught");
             }
-            catch (ArgumentException err)
+            catch (ArgumentException error)
             {
-                var result = ErrorTrace.DebuggingErrorFormat(err);
+                var result = ErrorTrace.DebuggingErrorFormat(error);
 
                 _testOutputHelper.WriteLine("\nExpected trace result:\n{0}", result);
 
@@ -62,11 +62,11 @@ namespace ErrorTrace.XTest
         {
             Exception inner = new ArgumentException("inner_exception");
 
-            Exception err = new FieldAccessException("final_exception", inner);
+            Exception error = new FieldAccessException("final_exception", inner);
 
-            string result = ErrorTrace.DebuggingErrorFormat(err);
+            string result = ErrorTrace.DebuggingErrorFormat(error);
 
-            _testOutputHelper.WriteLine("\nInnerTestNoTrace\n{0}", err);
+            _testOutputHelper.WriteLine("\nInnerTestNoTrace\n{0}", error);
 
             Assert.False(Regex.IsMatch(result, @"\(\d+\)"), "Expected NO line number in result");
         }
@@ -74,6 +74,7 @@ namespace ErrorTrace.XTest
         [Fact]
         public void InnerExceptionStackTraceTest()
         {
+            // Verify a nested exception formats correctly
             try
             {
                 throw new ArgumentException("Inner-Exception-text");
@@ -92,6 +93,7 @@ namespace ErrorTrace.XTest
 
                     Assert.True(Regex.IsMatch(result, @":\d+"), "Expected line number in result");
 
+                    // Expect two errors reported, the most recent and the first error
                     var two = result.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
                     _testOutputHelper.WriteLine(two.Length.ToString());
@@ -108,41 +110,45 @@ namespace ErrorTrace.XTest
 
 
         [Fact]
-        public void InnerErrorCounterTest()
+        public void InnerExceptionCountTest()
         {
             // Create an error with several inner exceptions and test that the ErrorTrace counts correctly
 
-            Assert.Equal(0, ErrorTrace.CountInnerDepth(null)); //, " null test");
+            Assert.Equal(0, ErrorTrace.InnerExceptionCount(null)); //, " null test");
 
-            var err = new ArgumentException("one");
+            var error = new ArgumentException("one");
 
-            Assert.Equal(1, ErrorTrace.CountInnerDepth(err)); //, "no inner test");
+            Assert.Equal(1, ErrorTrace.InnerExceptionCount(error)); //, "no inner test");
 
-            var err2 = new ArgumentException("two", err);
+            var error2 = new ArgumentException("two", error);
 
-            Assert.Equal(2, ErrorTrace.CountInnerDepth(err2)); //, "one inner test");
+            Assert.Equal(2, ErrorTrace.InnerExceptionCount(error2)); //, "one inner test");
 
-            var err3 = new ArgumentException("three", err2);
+            var error3 = new ArgumentException("three", error2);
 
-            Assert.Equal(3, ErrorTrace.CountInnerDepth(err3)); //, "two inner test");
+            Assert.Equal(3, ErrorTrace.InnerExceptionCount(error3)); //, "two inner test");
 
         }
 
-        private static void RecursiveError(Exception err)
+        private static void RecursiveError(Exception error)
         {
             try
             {
-                var depth = ErrorTrace.CountInnerDepth(err);
+                var depth = ErrorTrace.InnerExceptionCount(error);
 
                 if (depth < 21) // Limit of my nest test
-                    throw new ArgumentException($"level-{depth}", err);
+                    if (depth % 2 == 0)
+                        throw new ArgumentException($"level-{depth}", error);
+                    else
+                        throw new FieldAccessException($"level-{depth}", error);
+
             }
-            catch (ArgumentException newException)
+            catch (Exception newException)
             {
                 RecursiveError(newException);
             }
 
-            throw new ArgumentException("Final-Exception", err);
+            throw new ArgumentException("Final-Exception", error);
         }
 
         [Fact]
@@ -157,9 +163,9 @@ namespace ErrorTrace.XTest
                 RecursiveError(null);
                 throw new ArgumentException("Expected recursive error did not occur");
             }
-            catch (ArgumentException err)
+            catch (ArgumentException error)
             {
-                string result = ErrorTrace.DebuggingErrorFormat(err);
+                string result = ErrorTrace.DebuggingErrorFormat(error);
 
                 _testOutputHelper.WriteLine("\nInnerExceptionTraceTest;\n{0}", result);
 
@@ -182,8 +188,7 @@ namespace ErrorTrace.XTest
 
                 Assert.Equal(22, enumerable.Length); //, String.Format("Expected 22 found {0}", test.Count<string>()));
 
-                Assert.True(Regex.IsMatch(result,
-    @"nested\s+inner exceptions\s+are\s+not\s+shown"), "Expected not all errors shown");
+                Assert.True(Regex.IsMatch(result, @"not\s+shown"), "Expected not all errors shown");
 
             }
         }
