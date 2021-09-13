@@ -10,7 +10,7 @@ namespace ErrorTrace
     /// </summary>
     public static class ErrorTrace
     {
-        private static string DebuggingErrorFormatRecurse(Exception error, int depth)
+        private static string DebuggingErrorFormatRecurse(Exception error)
         {
             if (error == null)
                 return string.Empty;
@@ -23,7 +23,7 @@ namespace ErrorTrace
             if (error.InnerException != null)
                 q =
                     q.Union(new[]
-                    {$"Inner: {DebuggingErrorFormatRecurse(error.InnerException, depth + 1)}"});
+                    {$"Inner: {DebuggingErrorFormatRecurse(error.InnerException)}"});
 
             var result = string.Join(Environment.NewLine, q.ToArray());
 
@@ -37,7 +37,7 @@ namespace ErrorTrace
         /// <returns></returns>
         public static string DebuggingErrorFormat(Exception error)
         {
-            return DebuggingErrorFormatRecurse(error, 0);
+            return DebuggingErrorFormatRecurse(error);
         }
 
         /// <summary>
