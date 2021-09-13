@@ -12,10 +12,8 @@ namespace ErrorTrace
     {
         private static string DebuggingErrorFormatRecurse(Exception error, int depth)
         {
-            if (error == null || depth >= 20)
-                return error == null
-                    ? string.Empty
-                    : $"'{InnerExceptionCount(error.InnerException)}' additional nested inner exceptions are not shown.";
+            if (error == null)
+                return string.Empty;
 
             // Linq array of strings builder
             var q =
@@ -70,7 +68,7 @@ namespace ErrorTrace
             // GetFrames returns null instead of an empty array if there are no frames
             // so we must 'fix' the empty case in order to use it in a Linq query.
             var frames = trace.FrameCount > 0 ? trace.GetFrames() : new StackFrame[] { };
-            
+
             return
                 frames
                 .Where(f => f != null)

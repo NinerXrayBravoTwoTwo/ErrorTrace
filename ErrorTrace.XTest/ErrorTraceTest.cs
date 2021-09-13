@@ -31,7 +31,7 @@ namespace ErrorTrace.XTest
 
             string result = ErrorTrace.DebuggingErrorFormat(err);
 
-            _testOutputHelper.WriteLine("\nExpected result;\n{0}", result);
+            _testOutputHelper.WriteLine("\nExpected result{0}", result);
 
             Assert.False(Regex.IsMatch(result, @":\d+"), "Expected no line number in result");
         }
@@ -66,9 +66,9 @@ namespace ErrorTrace.XTest
 
             string result = ErrorTrace.DebuggingErrorFormat(error);
 
-            _testOutputHelper.WriteLine("\nInnerTestNoTrace\n{0}", error);
+            _testOutputHelper.WriteLine("\nInnerTestNoTrace:\n{0}", error);
 
-            Assert.False(Regex.IsMatch(result, @"\(\d+\)"), "Expected NO line number in result");
+            Assert.False(Regex.IsMatch(result, @":\d+"), "Expected NO line number in result");
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace ErrorTrace.XTest
                 {
                     string result = ErrorTrace.DebuggingErrorFormat(faException);
 
-                    _testOutputHelper.WriteLine("\nInnerExceptionTraceTest;\n{0}", result);
+                    _testOutputHelper.WriteLine("\nInnerExceptionTraceTest:\n{0}", result);
 
                     Assert.True(Regex.IsMatch(result, @":\d+"), "Expected line number in result");
 
@@ -130,66 +130,47 @@ namespace ErrorTrace.XTest
 
         }
 
-        private static void RecursiveError(Exception error)
+        private static void RecursiveError(Exception error, int limit)
         {
             try
             {
                 var depth = ErrorTrace.InnerExceptionCount(error);
 
-                if (depth < 21) // Limit of my nest test
-                    if (depth % 2 == 0)
+                if (0 <= limit) // Limit of my nest test
+                    if (limit % 2 == 0)
                         throw new ArgumentException($"level-{depth}", error);
                     else
                         throw new FieldAccessException($"level-{depth}", error);
-
             }
             catch (Exception newException)
             {
-                RecursiveError(newException);
+                RecursiveError(newException, limit - 1);
             }
 
-            throw new ArgumentException("Final-Exception", error);
+            throw error;
         }
 
         [Fact]
         public void DeepNestedErrorTest()
         {
             // ErrorTrace class has a recursion depth limiter
-            // This test validates that that limit is still active to help prevent incorrect configuration
             // Create nested error until it fails and output result
-            //  It is supposed to stop running at 21 nested inner errors
+            // It is supposed to stop running 'limit' nested inner errors
+            const int limit = 20;
             try
             {
-                RecursiveError(null);
+                RecursiveError(new NullReferenceException("Initial exception - level-0"), limit - 2); // last error has null inner, first error is level 0, so limit - 2 is the correct depth result.
                 throw new ArgumentException("Expected recursive error did not occur");
             }
             catch (ArgumentException error)
             {
                 string result = ErrorTrace.DebuggingErrorFormat(error);
 
-                _testOutputHelper.WriteLine("\nInnerExceptionTraceTest;\n{0}", result);
+                _testOutputHelper.WriteLine("\nInnerExceptionTraceTest:\n{0}", result);
 
                 Assert.True(Regex.IsMatch(result, @":\d+"), "Expected line number in result");
 
-                var two = result.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                var test =
-                    from a in two
-                    where Regex.IsMatch(a, @":\d+")
-                    select a;
-
-                var enumerable = test as string[] ?? test.ToArray();
-                var testCount = enumerable.Length;
-
-                if (enumerable.Length != 22)
-                {
-                    _testOutputHelper.WriteLine($"Expected 22 fount {testCount}");
-                }
-
-                Assert.Equal(22, enumerable.Length); //, String.Format("Expected 22 found {0}", test.Count<string>()));
-
-                Assert.True(Regex.IsMatch(result, @"not\s+shown"), "Expected not all errors shown");
-
+                Assert.Equal(limit, ErrorTrace.InnerExceptionCount(error));
             }
         }
     }
