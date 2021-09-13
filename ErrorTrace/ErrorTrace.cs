@@ -43,13 +43,13 @@ namespace ErrorTrace
         /// <summary>
         ///     Report a stack trace top of stack (most recent) down
         /// </summary>
-        /// <param name="e">Any exception</param>
+        /// <param name="error">Any exception</param>
         /// <returns>Strings of “filename(line number)” trace result.</returns>
-        private static IEnumerable<string> GetTrace(Exception e)
+        private static IEnumerable<string> GetTrace(Exception error)
         {
-            if (e == null) return new string[] { };
+            if (error == null) return new string[] { };
 
-            var trace = new StackTrace(e, true);
+            var trace = new StackTrace(error, true);
 
             var result = GetTrace(trace);
 
