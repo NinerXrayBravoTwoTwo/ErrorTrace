@@ -153,7 +153,6 @@ namespace ErrorTrace.XTest
         [Fact]
         public void DeepNestedErrorTest()
         {
-            // ErrorTrace class has a recursion depth limiter
             // Create nested error until it fails and output result
             // It is supposed to stop running 'limit' nested inner errors
             const int limit = 20;
