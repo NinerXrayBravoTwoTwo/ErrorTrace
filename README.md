@@ -1,5 +1,5 @@
 # ErrorTrace with Unit test
-Static class that reports exception with all of it's nestedd exceptions.
+Static class that reports exception with all of it's nested exceptions.
  
 ## License
 BSD License
