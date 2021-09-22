@@ -38,6 +38,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -57,7 +58,7 @@ namespace ErrorTrace
         /// <summary>
         /// An array os string comments added to by this.AddComment.
         /// </summary>
-        private readonly ArrayList _comments;
+        private readonly List<string> _comments;
 
         /// <summary>
         /// The time that this timer started.
@@ -121,7 +122,7 @@ namespace ErrorTrace
         /// <param name="comment"></param>
         public StopWatch(string comment) : this()
         {
-            _comments ??= new ArrayList();
+            _comments ??= new List<string>();
 
             this.AddComment(comment);
         }
@@ -177,28 +178,7 @@ namespace ErrorTrace
         /// <returns></returns>
         public string ToString(string separator)
         {
-            var sb = new StringBuilder();
-            foreach (string line in _comments)
-                sb.Append(line + separator);
-
-            sb.Append(this.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture) + separator);
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public string ToHtml()
-        {
-            var sb = new StringBuilder();
-            foreach (string line in _comments)
-                sb.Append($"{line}<br />{Environment.NewLine}");
-
-            sb.Append($"{Value.TotalSeconds.ToString(CultureInfo.InvariantCulture)}<br />{Environment.NewLine}");
-
-            return sb.ToString();
+            return string.Join(separator, _comments) + $"{separator}{Value.TotalSeconds}";
         }
     }
 }

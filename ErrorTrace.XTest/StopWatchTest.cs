@@ -21,7 +21,7 @@ namespace ErrorTrace.XTest
             System.Threading.Thread.Sleep(1000);
             sw.Stop($"Stopped: {sw.Value.TotalSeconds}");
 
-            _testOutputHelper.WriteLine( $">>> {sw.ToString("\n")}");
+            _testOutputHelper.WriteLine( $">{sw.ToString("\n")}");
 
             Assert.Equal(3, sw.CountComments);
         }
