@@ -21,10 +21,24 @@ namespace ErrorTrace.XTest
             System.Threading.Thread.Sleep(1000);
             sw.Stop($"Stopped: {sw.Value.TotalSeconds}");
 
-            _testOutputHelper.WriteLine( $">{sw.ToString("\n")}");
+            _testOutputHelper.WriteLine($"{sw.ToString("\n")}");
 
             Assert.Equal(3, sw.CountComments);
         }
 
+        [Fact]
+        public void AllComments()
+        {
+            var sw = new StopWatch("1");
+            sw.AddComment("2");
+            sw.AddComment("3");
+            sw.AddComment("4");
+            sw.AddComment("5");
+            sw.Stop();
+            _testOutputHelper.WriteLine(sw.ToString("\n"));
+            Assert.Equal(5, sw.CountComments);
+
+
+        }
     }
 }

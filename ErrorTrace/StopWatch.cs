@@ -77,12 +77,7 @@ namespace ErrorTrace
         {
             get
             {
-                var strAry = new string[_comments.Count];
-
-                for (var i = 0; i < _comments.Count - 1; i++)
-                    strAry[i] = (string)_comments[i];
-
-                return strAry;
+                return _comments.ToArray();
             }
         }
         /// <summary>
@@ -137,10 +132,9 @@ namespace ErrorTrace
         {
             if (_timeElapsed.Ticks != 0) return _timeElapsed;
 
-            AddComment(comment);
-            _timeElapsed = new TimeSpan(DateTime.Now.Ticks - _timeStart.Ticks);
-
-            return _timeElapsed;
+            if (!string.IsNullOrEmpty(comment))
+                AddComment(comment);
+            return new TimeSpan(DateTime.Now.Ticks - _timeStart.Ticks);
         }
 
         /// <summary>
