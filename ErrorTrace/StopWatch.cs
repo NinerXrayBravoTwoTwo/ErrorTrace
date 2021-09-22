@@ -37,10 +37,7 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 // ReSharper disable All
 
@@ -55,20 +52,12 @@ namespace ErrorTrace
     public class StopWatch
     {
         #region Properties
-        /// <summary>
-        /// An array os string comments added to by this.AddComment.
-        /// </summary>
-        private readonly List<string> _comments;
 
-        /// <summary>
-        /// The time that this timer started.
-        /// </summary>
+        private protected  List<string> _comments = new List<string>();
+
         private readonly DateTime _timeStart;
 
-        /// <summary>
-        /// The total elapsed time calculated when this timer was stopped.
-        /// </summary>
-        private TimeSpan _timeElapsed;
+        private DateTime _timeStop;
 
         /// <summary>
         /// A simple way to reference all the comments without using the Collection.
@@ -94,8 +83,19 @@ namespace ErrorTrace
         /// The TimeSpan since this object was instantiated 
         /// OR the timespan between instantiation and the first call to the Stop Method.
         /// </summary>
-        public TimeSpan Value => _timeElapsed.Ticks == 0 ? new TimeSpan(DateTime.Now.Ticks - _timeStart.Ticks) : _timeElapsed;
+   
+        public TimeSpan Value
+        {
+            get
+            {
+                var endTime = DateTime.Now;
 
+                if (_timeStop > DateTime.MinValue)
+                    endTime = _timeStop;
+
+                return new TimeSpan(endTime.Ticks - _timeStart.Ticks);
+            }
+        }
         /// <summary>
         /// This regular expression finds empty line. Used internally to work with empty comments.
         /// </summary>
@@ -108,7 +108,6 @@ namespace ErrorTrace
         public StopWatch()
         {
             _timeStart = DateTime.Now;
-            _timeElapsed = new TimeSpan(0);
         }
 
         /// <summary>
@@ -117,9 +116,7 @@ namespace ErrorTrace
         /// <param name="comment"></param>
         public StopWatch(string comment) : this()
         {
-            _comments ??= new List<string>();
-
-            this.AddComment(comment);
+            AddComment(comment);
         }
 
         /// <summary>
@@ -130,11 +127,12 @@ namespace ErrorTrace
         /// <returns></returns>
         public TimeSpan Stop(string comment)
         {
-            if (_timeElapsed.Ticks != 0) return _timeElapsed;
+            if (_timeStop.Ticks == 0)
+                _timeStop = DateTime.Now;
 
-            if (!string.IsNullOrEmpty(comment))
-                AddComment(comment);
-            return new TimeSpan(DateTime.Now.Ticks - _timeStart.Ticks);
+            AddComment(comment);
+
+            return Value;
         }
 
         /// <summary>
@@ -152,7 +150,7 @@ namespace ErrorTrace
         /// <param name="comment"></param>
         public void AddComment(string comment)
         {
-            if (IsEmpty.IsMatch(comment) || _timeElapsed.Milliseconds <= 0)
+            if (!string.IsNullOrEmpty(comment))
                 _comments.Add(comment);
         }
 

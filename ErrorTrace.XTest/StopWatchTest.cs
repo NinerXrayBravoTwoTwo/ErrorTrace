@@ -19,7 +19,7 @@ namespace ErrorTrace.XTest
             System.Threading.Thread.Sleep(1000);
             sw.AddComment($"Half way: {sw.Value.TotalSeconds}");
             System.Threading.Thread.Sleep(1000);
-            sw.Stop($"Stopped: {sw.Value.TotalSeconds}");
+            sw.Stop($"Stopped At: {sw.Value.TotalSeconds}");
 
             _testOutputHelper.WriteLine($"{sw.ToString("\n")}");
 
