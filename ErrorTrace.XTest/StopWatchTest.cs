@@ -16,9 +16,9 @@ namespace ErrorTrace.XTest
         public void StartStop()
         {
             var sw = new StopWatch("started timer: ");
-            System.Threading.Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(1000);
             sw.AddComment($"Half way: {sw.Value.TotalSeconds}");
-            System.Threading.Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(1000);
             sw.Stop($"Stopped: {sw.Value.TotalSeconds}");
 
             _testOutputHelper.WriteLine( $">>> {sw.ToString("\n")}");
