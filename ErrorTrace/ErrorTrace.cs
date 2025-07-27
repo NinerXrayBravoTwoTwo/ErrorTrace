@@ -22,8 +22,7 @@ namespace ErrorTrace
 
             if (error.InnerException != null)
                 q =
-                    q.Union(new[]
-                    {$"Inner: {DebuggingErrorFormatRecurse(error.InnerException)}"});
+                    q.Union([$"Inner: {DebuggingErrorFormatRecurse(error.InnerException)}"]);
 
             var result = string.Join(Environment.NewLine, q.ToArray());
 
@@ -47,7 +46,7 @@ namespace ErrorTrace
         /// <returns>Strings of “filename(line number)” trace result.</returns>
         private static IEnumerable<string> GetTrace(Exception error)
         {
-            if (error == null) return new string[] { };
+            if (error == null) return [];
 
             var trace = new StackTrace(error, true);
 
@@ -63,11 +62,11 @@ namespace ErrorTrace
         /// <returns></returns>
         public static IEnumerable<string> GetTrace(StackTrace trace)
         {
-            if (trace == null) return new string[] { };
+            if (trace == null) return [];
 
             // GetFrames returns null instead of an empty array if there are no frames
             // so we must 'fix' the empty case in order to use it in a Linq query.
-            var frames = trace.FrameCount > 0 ? trace.GetFrames() : new StackFrame[] { };
+            var frames = trace.FrameCount > 0 ? trace.GetFrames() : [];
 
             return
                 frames
